@@ -1,0 +1,308 @@
+FastAPI Installation, Project Structure & Your First REST API
+Week 2 · Backend Engineering
+Today we move from understanding APIs to actually building them using FastAPI and Python.
+By the end of this lesson, you will have a working backend application running locally in VS Code, with interactive Swagger documentation.
+This is the foundation for the AI Platform Gateway project you'll build during this preparation.
+1. What is FastAPI?
+FastAPI is a modern Python framework used to build APIs.
+It provides:
+•	Fast HTTP API development.
+•	Automatic request validation.
+•	Automatic API documentation.
+•	Python type-hint support.
+•	Asynchronous endpoint support.
+•	Integration with AI models and databases.
+3.1. Introduction to FastAPI: Lightweight Python Framework to Build APIs | by Kumar Harsh | Medium
+Where does FastAPI fit in an AI platform?
+Frontend Application
+       |
+       | HTTP Request
+       v
+   FastAPI Backend
+       |
+       v
+  Business Logic
+       |
+       +------ Model Manager
+       |
+       +------ Database
+       |
+       +------ LLM Provider
+       |
+       v
+  JSON Response
+       |
+       v
+Frontend Application
+For example, when a user submits a question to your AI platform, FastAPI receives the request and coordinates the required processing.
+2. Install FastAPI in VS Code
+We'll use your Windows and VS Code environment.
+Step 1 — Create a project folder
+Create a folder manually:
+E:\AIDSML\ChtGpt\Day-09\Projects\AIPlatformGateway
+Open this folder in VS Code.
+Step 2 — Open the terminal
+In VS Code:
+1.	Click Terminal.
+2.	Select New Terminal.
+3.	Check that the terminal is PowerShell.
+4.	Confirm that the terminal is inside your project directory.
+Step 3 — Create a virtual environment
+Run:
+python -m venv .venv
+This creates an isolated Python environment for the project.
+Activate it:
+.venv\Scripts\Activate.ps1
+If PowerShell blocks activation because of the execution policy, run this command in the current terminal:
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+Then activate again:
+.venv\Scripts\Activate.ps1
+You should see:
+(.venv) PS D:\Gaurev\Projects\AIPlatformGateway>
+Step 4 — Install dependencies
+Run: 
+python -m pip install --upgrade pip
+Then:
+pip install "fastapi[standard]"
+This installs FastAPI and its standard development dependencies, including the server tooling.
+Verify:
+pip show fastapi
+It will show:
+Name: fastapi
+Version: 0.165.0
+Summary: FastAPI framework, high performance, easy to learn, fast to code, ready for production
+Home-page: https://github.com/fastapi/fastapi
+Author: 
+Author-email: Sebastián Ramírez <tiangolo@gmail.com>
+License-Expression: MIT
+Location: E:\AIDSML\ChtGpt\Day-09\Projects\AIPlatformGateway\.venv\Lib\site-packages
+Requires: annotated-doc, anyio, opentelemetry-api, pydantic, starlette, typing-extensions, typing-inspection
+Required-by:
+
+3. Create your first FastAPI application
+Create a file named:
+main.py
+Enter the following complete code:
+from fastapi import FastAPI
+
+app = FastAPI(
+    title="AI Platform Gateway",
+    description="Backend API for managing AI models and requests",
+    version="1.0.0"
+)
+
+
+@app.get("/")
+def home():
+    return {
+        "message": "Welcome to AI Platform Gateway",
+        "status": "running"
+    }
+
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "service": "AI Platform Gateway"
+    }
+
+
+@app.get("/about")
+def about():
+    return {
+        "application": "AI Platform Gateway",
+        "framework": "FastAPI",
+        "language": "Python",
+        "version": "1.0.0"
+    }
+
+Understand the code
+Code	Explanation
+FastAPI()	Creates the application
+app	Application instance
+@app.get("/")	Registers a GET endpoint
+home()	Function executed for that endpoint
+return	Sends response data
+@app.get("/health")	Registers health endpoint
+An important concept:
+@app.get("/health")
+This is called a decorator.
+It tells FastAPI that when a GET request arrives at /health, it should execute the health_check() function.
+4. Run your FastAPI application
+In the VS Code terminal, run:
+fastapi dev main.py
+You should see a message indicating that the development server is running, typically at:
+http://127.0.0.1:8000
+Expected result
+Your backend is now running locally.
+Open your browser and visit these URLs:
+Your local API endpoints
+Local development
+Home
+Welcome message
+http://127.0.0.1:8000/
+Health
+Service health status
+http://127.0.0.1:8000/health
+About
+Application details
+http://127.0.0.1:8000/about
+Swagger UI
+Interactive API documentation
+http://127.0.0.1:8000/docs
+ReDoc
+Alternative API documentation
+http://127.0.0.1:8000/redoc
+Note: These addresses work on your computer only while the local server is running. They aren't publicly deployed URLs.
+5. Understand Swagger documentation
+ 
+Open:
+http://127.0.0.1:8000/docs
+You should see your API documentation.
+Try this:
+1.	Expand the GET /health endpoint.
+2.	Click Try it out.
+3.	Click Execute.
+4.	Inspect the response body.
+5.	Check the response code.
+Expected response:
+JSON
+{
+  "status": "healthy",
+  "service": "AI Platform Gateway"
+}
+
+You just tested your first REST API without writing a separate frontend.
+6. Understand path parameters
+Path parameters allow an API to receive values through its URL.
+Add this code to main.py:
+@app.get("/models/{model_id}")
+def get_model(model_id: int):
+
+    return {
+        "model_id": model_id,
+        "message": "Model details retrieved successfully"
+    }
+
+Test:
+http://127.0.0.1:8000/models/101
+Expected response:
+JSON
+{
+  "model_id": 101,
+  "message": "Model details retrieved successfully"
+}
+Notice:
+model_id: int
+FastAPI automatically converts the path parameter into an integer and validates it.
+Try:
+http://127.0.0.1:8000/models/hello
+You should receive a validation error because hello is not an integer.
+This is one of FastAPI's most useful features. 
+7. Understand query parameters
+Query parameters are values passed after ? in a URL.
+Add:
+@app.get("/search")
+def search_models(provider: str = "OpenAI"):
+
+    return {
+        "provider": provider,
+        "message": "Searching AI models"
+    }
+
+Try:
+http://127.0.0.1:8000/search
+Then:
+http://127.0.0.1:8000/search?provider=Anthropic
+Expected response:
+JSON
+{
+  "provider": "Anthropic",
+  "message": "Searching AI models"
+}
+
+Difference:
+Parameter	Example
+Path parameter	/models/101
+Query parameter	/search?provider=OpenAI
+8. Your first AI Platform API project
+Now let's organize the application like a professional backend project.
+Create this folder structure manually:
+AIPlatformGateway/
+│
+├── main.py
+│
+├── api/
+│   ├── __init__.py
+│   └── endpoints.py
+│
+├── services/
+│   ├── __init__.py
+│   └── model_service.py
+│
+├── schemas/
+│   └── __init__.py
+│
+├── config/
+│   └── __init__.py
+│
+└── requirements.txt
+For today's lesson, we'll keep the first application in main.py. The folders establish the structure we'll gradually implement in the following lessons.
+Create requirements.txt
+fastapi[standard]
+Why use this project structure?
+Folder/file	Responsibility
+main.py	Application entry point
+api/	API routes
+services/	Business logic
+schemas/	Request and response validation
+config/	Application settings
+requirements.txt	Project dependencies
+Separating API endpoints from business logic makes applications easier to test, maintain, and scale.
+
+
+9. Important FastAPI interview questions
+Q1. What is FastAPI?
+FastAPI is a modern Python framework for building APIs using Python type hints, automatic validation, and generated API documentation.
+Q2. What is Uvicorn?
+Uvicorn is an ASGI server that runs asynchronous Python web applications, including FastAPI applications.
+Q3. What is an ASGI application?
+ASGI stands for Asynchronous Server Gateway Interface. It defines how asynchronous Python web applications communicate with web servers.
+Q4. What is a decorator in FastAPI?
+A decorator such as @app.get() registers a Python function as an API endpoint.
+Q5. What is Swagger UI?
+Swagger UI provides interactive documentation that allows developers to inspect and test API endpoints.
+Q6. What is the difference between a path parameter and a query parameter?
+Path parameters identify a resource, while query parameters commonly filter, search, or customize a request.
+Q7. Why use virtual environments?
+They isolate project dependencies and prevent conflicts between different Python projects.
+Q8. Why is FastAPI useful for AI applications?
+It provides request validation, API routing, asynchronous capabilities, and easy integration with model services and databases.
+10. Day 9 practical checklist
+Day 9 progress
+0/10
+Create AIPlatformGateway folder in VS Code.
+Create and activate .venv.
+Install fastapi[standard].
+Build main.py with three GET endpoints.
+Run the application using fastapi dev main.py.
+Open Swagger UI and test the health endpoint.
+Implement a path parameter endpoint.
+Implement a query parameter endpoint.
+Create the professional project folder structure.
+Create requirements.txt.
+11. Your Day 9 assessment
+Answer these three questions:
+1.	What happens internally when you run fastapi dev main.py?
+2.	What is the difference between @app.get() and @app.post()?
+3.	Why do we separate api/ and services/ in a professional AI backend?
+Practical assignment: Run your application in VS Code and share your main.py code or a screenshot of your Swagger UI. I'll review it and help resolve any installation or runtime errors.
+Day 10 — FastAPI GET and POST endpoints
+Next, we'll build real API operations:
+•	GET: List AI models.
+•	GET: Retrieve individual model information.
+•	POST: Submit an AI model request.
+•	Request body handling.
+•	Input validation and response JSON.
+•	Test APIs using Swagger UI.
